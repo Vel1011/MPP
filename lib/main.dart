@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sprite_07/components/player_sprite_sheet_component.dart';
+import 'package:sprite_07/components/player_sprite_sheet_component_full.dart';
 import 'package:flame/game.dart';
 
 void main() async{

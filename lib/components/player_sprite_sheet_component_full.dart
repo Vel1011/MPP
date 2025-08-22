@@ -13,8 +13,11 @@ class PlayerSpriteSheetComponentAnimation extends SpriteAnimationComponent with 
   final double spriteSheetWidth = 680;
   final double spriteSheetHeight = 472;
 
-  late SpriteAnimation dinoAnimation;
-
+  late SpriteAnimation walkAnimation;
+  late SpriteAnimation idleAnimation;
+  late SpriteAnimation runAnimation;
+  late SpriteAnimation jumpAnimation;
+  late SpriteAnimation deadAnimation;
 
 
 @override
@@ -36,8 +39,12 @@ void onLoad() async {
   position = Vector2(centerX, centerY); // Position of the sprite sheet in the image
   size = Vector2(spriteSheetWidth, spriteSheetHeight); // Size of the sprite sheet
 
-  dinoAnimation = spriteSheet.createAnimationByLimit(xInit: 6, yInit: 2, step: 10, sizex: 5, stepTime: .08);
+  deadAnimation = spriteSheet.createAnimationByLimit(xInit: 0, yInit: 0, step: 8, sizex: 5, stepTime: .08);
+  idleAnimation = spriteSheet.createAnimationByLimit(xInit: 1, yInit: 2, step: 10, sizex: 5, stepTime: .08);
+  jumpAnimation = spriteSheet.createAnimationByLimit(xInit: 3, yInit: 0, step: 12, sizex: 5, stepTime: .08);
+  runAnimation = spriteSheet.createAnimationByLimit(xInit: 5, yInit: 0, step: 8, sizex: 5, stepTime: .08);
+  walkAnimation = spriteSheet.createAnimationByLimit(xInit: 6, yInit: 2, step: 10, sizex: 5, stepTime: .08);
 
-  animation = dinoAnimation;
+  animation = idleAnimation;
   }
 }
