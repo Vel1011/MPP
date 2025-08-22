@@ -27,7 +27,7 @@ void onLoad() async {
   centerX = (screenWidth / 2) - (spriteSheetWidth / 2);
   centerY = (screenHeight / 2) - (spriteSheetHeight / 2);
 
-  var spriteImage = await Flame.images.load('dinofull.png');
+  var spriteImage = await Flame.images.load('dyno_walk.png');
   
   final spriteSheet = SpriteSheet(
     image: spriteImage,
