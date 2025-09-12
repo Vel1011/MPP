@@ -1,18 +1,32 @@
+// main.dart
 import 'package:flutter/material.dart';
-import 'package:sprite_07/components/player_sprite_sheet_component_full.dart';
 import 'package:flame/game.dart';
+import 'package:flame/input.dart';
+import 'package:sprite_07/components/player_sprite_sheet_component_walk.dart';
 
-void main() async{
-  runApp(GameWidget(game: MyGame()));
+void main() {
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: GameWidget(game: MyGame()),
+      ),
+    ),
+  );
 }
 
-class MyGame extends FlameGame {
+// Pastikan mixin HasKeyboardHandlerComponents ditambahkan
+class MyGame extends FlameGame with HasKeyboardHandlerComponents {
+  late PlayerSpriteSheetComponentAnimation player;
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    add(PlayerSpriteSheetComponentAnimation());
+
+    player = PlayerSpriteSheetComponentAnimation();
+    await add(player);
   }
 
   @override
-  Color backgroundColor() => Colors.black;
+  Color backgroundColor() => const Color(0xFF000000); // hitam
 }
