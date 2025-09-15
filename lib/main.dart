@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
-import 'package:sprite_07/components/player_sprite_sheet_component_walk.dart';
+import 'package:sprite_07/components/player_sprite_sheet_component_animation.dart';
 
 void main() {
   runApp(

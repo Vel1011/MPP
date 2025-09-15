@@ -1,20 +1,14 @@
-// player_sprite_sheet_component.dart
-
 import 'package:flame/flame.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/services.dart';
 import 'package:sprite_07/utils/create_animation_by_limit.dart';
 
-// Kelas untuk mengontrol player menggunakan sprite sheet dengan animasi berjalan dan diam
 class PlayerSpriteSheetComponentAnimation extends SpriteAnimationComponent
     with KeyboardHandler {
-
-  // Variabel untuk menyimpan ukuran layar
+  // Ukuran layar
   late double screenWidth;
   late double screenHeight;
-
-  // Variabel untuk posisi tengah layar
   late double centerX;
   late double centerY;
 
@@ -22,103 +16,128 @@ class PlayerSpriteSheetComponentAnimation extends SpriteAnimationComponent
   final double spriteSheetWidth = 680;
   final double spriteSheetHeight = 472;
 
-  // Animasi sprite untuk berjalan dan diam
-  late SpriteAnimation walkAnimation;
-  late SpriteAnimation idleAnimation;
+  // Animasi yang dipakai
+  late SpriteAnimation walkAnimation;   // animasi jalan
+  late SpriteAnimation idleAnimation;   // animasi diam
+  late SpriteAnimation deadAnimation;   // animasi mati
 
-  // Kecepatan gerak player (pixel per detik)
+  // Properti gerakan
   final double speed = 300;
-
-  // Status arah hadap player (true = kanan, false = kiri)
   bool facingRight = true;
 
-  // Status tombol arah yang ditekan
+  // Kontrol gerakan
   bool moveLeft = false;
   bool moveRight = false;
+  bool isDead = false; // status mati
 
-  // Fungsi ini dipanggil saat komponen di-load
+  // simpan stepTime manual untuk animasi mati
+  final double deathStepTime = 0.08;
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
 
-    // Ambil ukuran layar dari game
+    // ambil ukuran layar dari game
     final gameSize = findGame()!.size;
     screenWidth = gameSize.x;
     screenHeight = gameSize.y;
 
-    // Hitung posisi tengah layar agar player muncul di tengah
+    // hitung posisi awal (tengah layar)
     centerX = (screenWidth / 2) - (spriteSheetWidth / 2);
     centerY = (screenHeight / 2) - (spriteSheetHeight / 2);
 
-    // Load gambar sprite sheet
+    // load gambar sprite
     final spriteImage = await Flame.images.load('dinofull.png');
 
-    // Buat objek SpriteSheet dari gambar
     final spriteSheet = SpriteSheet(
       image: spriteImage,
       srcSize: Vector2(spriteSheetWidth, spriteSheetHeight),
     );
 
-    // Set posisi dan ukuran player
+    // atur posisi & ukuran karakter
     position = Vector2(centerX, centerY);
     size = Vector2(spriteSheetWidth, spriteSheetHeight);
 
-    // Buat animasi idle (diam) dari sprite sheet
+    // buat animasi idle (diam)
     idleAnimation = spriteSheet.createAnimationByLimit(
       xInit: 1, yInit: 2, step: 10, sizex: 5, stepTime: .08,
     );
 
-    // Buat animasi berjalan dari sprite sheet
+    // buat animasi jalan
     walkAnimation = spriteSheet.createAnimationByLimit(
       xInit: 6, yInit: 2, step: 10, sizex: 5, stepTime: .08,
     );
 
-    // Set animasi awal menjadi idle
+    // buat animasi mati (tidak loop)
+    deadAnimation = spriteSheet.createAnimationByLimit(
+      xInit: 0, yInit: 0, step: 8, sizex: 5, stepTime: deathStepTime,
+      loop: false,
+    );
+
+    // animasi default = idle
     animation = idleAnimation;
   }
 
-  // Fungsi ini dipanggil setiap frame
   @override
   void update(double dt) {
     super.update(dt);
 
-    // Gerakkan player ke kanan jika tombol kanan ditekan
+    // Jika sedang mati, biarkan animasi mati jalan
+    if (isDead) {
+      return;
+    }
+
+    // Gerakan kanan / kiri
     if (moveRight) {
       position.x += speed * dt;
       facingRight = true;
       animation = walkAnimation;
-    } 
-    // Gerakkan player ke kiri jika tombol kiri ditekan
-    else if (moveLeft) {
+    } else if (moveLeft) {
       position.x -= speed * dt;
       facingRight = false;
       animation = walkAnimation;
-    } 
-    // Jika tidak ada tombol ditekan, gunakan animasi idle
-    else {
+    } else {
       animation = idleAnimation;
     }
 
-    // Batasi posisi player agar tetap di dalam layar
+    // Batasi agar tetap di layar
     if (position.x < 0) position.x = 0;
-    if (position.x + size.x > screenWidth) position.x = screenWidth - size.x;
+    if (position.x + size.x > screenWidth) {
+      position.x = screenWidth - size.x;
+    }
 
-    // Flip sprite secara horizontal sesuai arah hadap
+    // Balik sprite jika menghadap kiri
     if (facingRight) {
-      scale.x = 1; // arah normal
+      scale.x = 1;
       anchor = Anchor.topLeft;
     } else {
-      scale.x = -1; // balik horizontal
+      scale.x = -1;
       anchor = Anchor.topRight;
     }
   }
 
-  // Fungsi untuk menangani input keyboard
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    // Cek apakah tombol arah kiri atau kanan ditekan
+    // cek input panah kiri/kanan
     moveLeft = keysPressed.contains(LogicalKeyboardKey.arrowLeft);
     moveRight = keysPressed.contains(LogicalKeyboardKey.arrowRight);
+
+    // tekan SHIFT kiri -> animasi mati
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.shiftLeft) {
+      isDead = true;
+      animation = deadAnimation.clone(); // mainkan animasi mati
+      return true;
+    }
+
+    // lepas SHIFT kiri -> balik idle lagi
+    if (event is KeyUpEvent &&
+        event.logicalKey == LogicalKeyboardKey.shiftLeft) {
+      isDead = false;
+      animation = idleAnimation; // langsung idle, tanpa reverse
+      return true;
+    }
+
     return true;
   }
 }
